@@ -2,7 +2,7 @@ import torch.nn as nn
 
 class CWRU_1D_CNN(nn.Module):
     def __init__(self, num_classes=4):
-        super(CWRU_1D_CNN, self).__init__()
+        super().__init__()
         self.features = nn.Sequential(
             nn.Conv1d(1, 16, kernel_size=64, stride=8, padding=0),
             nn.BatchNorm1d(16),
@@ -14,7 +14,7 @@ class CWRU_1D_CNN(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool1d(kernel_size=2, stride=2),
 
-            nn.Conv1d(32, 64, kernel_size=3, stride=1, padding=1),  # 目标层
+            nn.Conv1d(32, 64, kernel_size=3, stride=1, padding=1),  # target layer
             nn.BatchNorm1d(64),
             nn.ReLU(inplace=True),
         )
@@ -24,5 +24,4 @@ class CWRU_1D_CNN(nn.Module):
     def forward(self, x):
         x = self.features(x)
         x = self.avgpool(x).squeeze(-1)
-        x = self.classifier(x)
-        return x
+        return self.classifier(x)
