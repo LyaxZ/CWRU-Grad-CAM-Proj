@@ -17,29 +17,34 @@ def extract_signal(filepath):
     for k in mat.keys():
         if 'DE' in k:
             return mat[k].flatten()
-    raise ValueError(f"无法从 {filepath} 提取DE信号")
+    raise ValueError(f"Cannot extract DE signal from {filepath}")
 
 def segment_signal(signal, label, sample_len, overlap):
     step = sample_len - overlap
-    n_samples = max(0, (len(signal) - sample_len) // step + 1)
+    sample_num = max(0, (len(signal) - sample_len) // step + 1)
+    
     segments, labels = [], []
-    for i in range(n_samples):
+    for i in range(sample_num):
         start = i * step
         segments.append(signal[start:start+sample_len])
         labels.append(label)
+    
     return np.array(segments), np.array(labels)
 
 def build_dataset(data_dir, use_classes=4, sample_len=1024, overlap=512, save_file=None):
-    label_map = LABEL_MAP_4 if use_classes == 4 else {}
+    label_map = LABEL_MAP_4
     X_all, y_all = [], []
     
     for fpath in glob.glob(os.path.join(data_dir, "*.mat")):
         fname = os.path.basename(fpath).replace('.mat', '')
+        
         label = next((label_map[k] for k in label_map if k in fname), None)
         if label is None:
             continue
+        
         raw = extract_signal(fpath)
         segs, labs = segment_signal(raw, label, sample_len, overlap)
+        
         X_all.append(segs)
         y_all.append(labs)
     
@@ -82,6 +87,6 @@ def get_dataloaders(data_dir, results_dir, batch_size=64, use_classes=4,
     val_loader = DataLoader(CWRUDataset(X_val, y_val), batch_size=batch_size)
     test_loader = DataLoader(CWRUDataset(X_test, y_test), batch_size=batch_size)
     
-    class_names = ["Normal", "InnerRace", "OuterRace", "Ball"] if use_classes == 4 else []
+    class_names = ["Normal", "InnerRace", "OuterRace", "Ball"]
     
     return train_loader, val_loader, test_loader, use_classes, class_names

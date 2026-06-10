@@ -6,17 +6,17 @@ class CWRU_1D_CNN(nn.Module):
         self.features = nn.Sequential(
             nn.Conv1d(1, 16, kernel_size=64, stride=8, padding=0),
             nn.BatchNorm1d(16),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=False),
             nn.MaxPool1d(kernel_size=2, stride=2),
 
             nn.Conv1d(16, 32, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm1d(32),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=False),
             nn.MaxPool1d(kernel_size=2, stride=2),
 
-            nn.Conv1d(32, 64, kernel_size=3, stride=1, padding=1),  # target layer
+            nn.Conv1d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.BatchNorm1d(64),
-            nn.ReLU(inplace=True),
+            nn.ReLU(inplace=False),
         )
         self.avgpool = nn.AdaptiveAvgPool1d(1)
         self.classifier = nn.Linear(64, num_classes)

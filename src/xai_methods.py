@@ -3,7 +3,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 class OcclusionSensitivity1D:
-    def __init__(self, model, window_size=64, stride=16):
+    def __init__(self, model, window_size=32, stride=8):
         self.model = model
         self.window_size = window_size
         self.stride = stride
@@ -23,7 +23,8 @@ class OcclusionSensitivity1D:
         
         for start in range(0, signal_len - self.window_size + 1, self.stride):
             occluded = input_tensor.clone()
-            occluded[0, 0, start:start+self.window_size] = 0.0
+            mean_val = torch.tensor(np.mean(input_tensor[0, 0, :].cpu().numpy())).to(input_tensor.device)
+            occluded[0, 0, start:start+self.window_size] = mean_val
             
             with torch.no_grad():
                 prob = torch.softmax(self.model(occluded), dim=1)[0, target_class].item()
@@ -35,15 +36,17 @@ class OcclusionSensitivity1D:
         count[count == 0] = 1
         sensitivity /= count
         
-        if sensitivity.max() - sensitivity.min() > 1e-8:
-            sensitivity = (sensitivity - sensitivity.min()) / (sensitivity.max() - sensitivity.min())
-        else:
-            sensitivity = np.zeros_like(sensitivity)
+        sensitivity = np.maximum(sensitivity, 0)
+        
+        if sensitivity.max() > 0:
+            sensitivity = sensitivity / sensitivity.max()
+        
         return sensitivity
 
 def upsample_cam(cam, target_length):
     if len(cam) == target_length:
         return cam
-    x_cam = np.linspace(0, 1, len(cam))
-    x_target = np.linspace(0, 1, target_length)
-    return interp1d(x_cam, cam, kind='linear', fill_value='extrapolate')(x_target)
+    
+    x_cam = np.linspace(0, target_length - 1, len(cam))
+    x_target = np.arange(target_length)
+    return np.interp(x_target, x_cam, cam)
