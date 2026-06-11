@@ -15,7 +15,7 @@ from dataloader import get_dataloaders
 from model import CWRU_1D_CNN
 from baselines import SmallKernelCNN, DeepCNN
 
-# Configuration
+# 配置参数
 BATCH_SIZE = 64
 LR = 0.001
 EPOCHS = 30
@@ -27,7 +27,7 @@ RESULTS_DIR = os.path.join(BASE_DIR, '..', 'results')
 DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# Load data
+# 加载数据
 print("\nLoading data...")
 train_loader, val_loader, test_loader, num_classes, class_names = get_dataloaders(
     data_dir=DATA_DIR, results_dir=RESULTS_DIR, batch_size=BATCH_SIZE)
